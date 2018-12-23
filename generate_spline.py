@@ -3,6 +3,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.interpolate import splrep, splev
 
 # DEFINITIONS
 # Create a range of Y axis values to plot on
@@ -16,9 +17,11 @@ obstacles = [(-1.5, -5), (1, -1), (4, 5)]
 # COMPUTATIONS
 # The optimal free path (assuming no obstacles) should be the average of the left and right edges
 free_path = (left_edge + right_edge) / 2
+# Create a list of spline points to add to the winding path, starting with the current position
+# Add the current position to the spline
+spline_points = [(free_path[0], y[0])]
 # Next, we want to create a series of points that a spline can be fit to, which avoids the obstacles with the most room to spare
-# Iterate over the obstacles, adding to a list of spline points
-spline_points = []
+# Iterate over the obstacles, adding to the list of spline points
 for obstacle_x, obstacle_y in obstacles:
     # Find the point on both of the road boundaries that is the closest (straight-line) to this obstacle
     left_distances = np.sqrt((left_edge - obstacle_x) ** 2 + (y - obstacle_y) ** 2)
@@ -33,9 +36,15 @@ for obstacle_x, obstacle_y in obstacles:
     else:
         spline_points.append(((right_edge[right_closest_index] + obstacle_x) / 2, (y[right_closest_index] + obstacle_y) / 2))
 
+# Fit a spline to the points (switching X and Y because Y is increasing, not X)
+spline_points_x, spline_points_y = zip(*spline_points)
+spline = splrep(spline_points_y, spline_points_x)
+# Evaluate the spline on the full Y range
+spline_x = splev(y, spline)
+
 # DISPLAY
 # Display all edges and paths in question
-plt.plot(left_edge, y, right_edge, y, free_path, y)
+plt.plot(left_edge, y, right_edge, y, free_path, y, spline_x, y)
 # Scatter plot the obstacles and the spline points
 plt.scatter(*zip(*obstacles))
 plt.scatter(*zip(*spline_points))
