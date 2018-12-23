@@ -35,6 +35,17 @@ for obstacle_x, obstacle_y in obstacles:
         spline_points.append(((left_edge[left_closest_index] + obstacle_x) / 2, (y[left_closest_index] + obstacle_y) / 2))
     else:
         spline_points.append(((right_edge[right_closest_index] + obstacle_x) / 2, (y[right_closest_index] + obstacle_y) / 2))
+# Iterate over a more widely spaced Y range in the form of a list
+for wide_y in np.arange(-10, 10, 0.5):
+    # Create a flag to determine whether this point is too close to an obstacle
+    # Ignore those points for which the corresponding free path points are within a predefined distance of an obstacle
+    for obstacle_x, obstacle_y in obstacles:
+        # Get the index of value closest to this widely spaced value within the regular Y values
+        non_wide_y_index = np.argmin((y - wide_y) ** 2)
+        # Use this value in computing the distance from the obstacle to the corresponding free path point
+        if np.sqrt((free_path[non_wide_y_index] - obstacle_x) ** 2 + (y[non_wide_y_index] - obstacle_y) ** 2) < 1:
+            # If it's not too close
+            break
 
 # Fit a spline to the points (switching X and Y because Y is increasing, not X)
 spline_points_x, spline_points_y = zip(*spline_points)
