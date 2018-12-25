@@ -23,7 +23,7 @@ def path_loss(path, x, free):
         # Get the Pythagorean distance from each point on the path to this obstacle
         distances = np.sqrt(np.square(obstacle_x - x) + np.square(obstacle_y - path))
         # Invert all of these distances so closer is worse, multiply them by a constant, and add them to the loss
-        loss_values.append(np.mean(1 / distances) * 400)
+        loss_values.append(np.mean(1 / distances) * 800)
     # Return the aggregated loss
     return np.sum(loss_values)
 
@@ -44,18 +44,16 @@ while True:
     obstacles_x, obstacles_y = [np.array(value_list) for value_list in zip(*obstacles)]
     # Create a range of fairly widely spaced X axis values to optimize
     x = np.arange(0, 30, 1)
-    print(obstacles)
     # # The optimal free path (assuming no obstacles) should be a line to the provided endpoint
     # end_point_x = message['endPoint']['x']
     # end_point_y = message['endPoint']['y']
     end_point_x = 40
-    end_point_y = 0
+    end_point_y = -2
     free_path_line = np.polyfit([0, end_point_x], [0, end_point_y], deg=1)
+    print(free_path_line)
     free_path = np.poly1d(free_path_line)(x)
     # Minimize the loss to produce an optimal path
     path = minimize(path_loss, x0=free_path, args=(x, free_path), method='TNC', jac=grad(path_loss)).x
-    print(list(path))
-    print(list(x))
     # Fit a spline to the points
     spline = splrep(x, path)
     # Evaluate the spline on a denser X range
