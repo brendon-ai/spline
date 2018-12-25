@@ -8,16 +8,16 @@ from scipy.optimize import minimize, basinhopping
 import zmq
 
 
-def path_loss(path, x):
+def path_loss(path, x, free):
     """Given a set of Y values corresponding to the predefined X range, return a loss that optimizes distance from obstacles as well as the ideal path"""
     # Get the mean squared error of the path from the constant free path
-    path_mean_squared_error = np.mean(np.square(free_path - path))
+    path_mean_squared_error = np.mean(np.square(free - path))
     # Create a list containing things to add up to produce the final loss
     loss_values = [path_mean_squared_error]
     # Iterate over the path, calculating differences from one point to the next so the derivative is incorporated into the loss
     for point_index in range(len(path) - 1):
         # Add the squared difference between the derivative and the free path derivative (multiplied by a weight) to the loss list
-        loss_values.append(np.square((path[point_index] - path[point_index + 1]) - (free_path[point_index] - free_path[point_index])) * 0.1)
+        loss_values.append(np.square((path[point_index] - path[point_index + 1]) - (free[point_index] - free[point_index])) * 0.1)
     # Iterate over the obstacles, adding to the loss
     for obstacle_x, obstacle_y in obstacles:
         # Get the Pythagorean distance from each point on the path to this obstacle
@@ -38,15 +38,17 @@ while True:
     message = socket.recv_json()
     # Take the obstacles from the message
     obstacles = [(vector['x'], vector['y']) for vector in message['obstacles']]
-    print(message['endPoint'])
     # Get the X and Y positions of the obstacles individually
     obstacles_x, obstacles_y = [np.array(value_list) for value_list in zip(*obstacles)]
     # Create a range of fairly widely spaced X axis values to optimize
     x = np.arange(0, 30, 0.5)
-    # The optimal free path (assuming no obstacles) should consist of zeroes (temporary)
-    free_path = np.zeros(len(x))
+    # The optimal free path (assuming no obstacles) should be a line to the provided endpoint
+    end_point_x = message['endPoint']['x']
+    end_point_y = message['endPoint']['y']
+    free_path_line = np.polyfit([0, end_point_x], [0, end_point_y], deg=1)
+    free_path = np.poly1d(free_path_line)(x)
     # Minimize the loss to produce an optimal path
-    path = minimize(path_loss, x0=free_path, args=(x,), method='TNC', jac=grad(path_loss)).x
+    path = minimize(path_loss, x0=free_path, args=(x, free_path), method='TNC', jac=grad(path_loss)).x
     # Fit a spline to the points
     spline = splrep(x, path)
     # Evaluate the spline on a denser X range
