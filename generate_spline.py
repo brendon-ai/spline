@@ -41,7 +41,7 @@ while True:
     # Get the X and Y positions of the obstacles individually
     obstacles_x, obstacles_y = [np.array(value_list) for value_list in zip(*obstacles)]
     # Create a range of fairly widely spaced X axis values to optimize
-    x = np.arange(0, 30, 0.5)
+    x = np.arange(0, 30, 1)
     # The optimal free path (assuming no obstacles) should be a line to the provided endpoint
     end_point_x = message['endPoint']['x']
     end_point_y = message['endPoint']['y']
