@@ -23,7 +23,7 @@ def path_loss(path, x, free):
         # Get the Pythagorean distance from each point on the path to this obstacle
         distances = np.sqrt(np.square(obstacle_x - x) + np.square(obstacle_y - path))
         # Invert all of these distances so closer is worse, multiply them by a constant, and add them to the loss
-        loss_values.append(np.mean((4 / distances) ** 2) * 30)
+        loss_values.append(np.mean((4 / distances) ** 2) * 60)
     # Return the aggregated loss
     return np.sum(loss_values)
 
@@ -34,21 +34,17 @@ socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5556')
 # Infinite loop during which we receive packets from the Unity simulation
 while True:
-    # # Get a message from the simulation
-    # message = socket.recv_json()
-    # # Take the obstacles from the message
-    # obstacles = [(vector['x'], vector['y']) for vector in message['obstacles']]
-    obstacles = [(14.517830848693848, 5.28299617767334), (20.92901611328125, -5.1113810539245605), (24.710485458374023, -0.36252260208129883),
-                 (30.900638580322266, 8.074536323547363), (23.905414581298828, -3.4248924255371094), (39.547122955322266, -0.677603542804718)]
+    # Get a message from the simulation
+    message = socket.recv_json()
+    # Take the obstacles from the message
+    obstacles = [(vector['x'], vector['y']) for vector in message['obstacles']]
     # Get the X and Y positions of the obstacles individually
     obstacles_x, obstacles_y = [np.array(value_list) for value_list in zip(*obstacles)]
     # Create a range of fairly widely spaced X axis values to optimize
     x = np.arange(0, 40, 2)
-    # # The optimal free path (assuming no obstacles) should be a line to the provided endpoint
-    # end_point_x = message['endPoint']['x']
-    # end_point_y = message['endPoint']['y']
-    end_point_x = 40
-    end_point_y = -2
+    # The optimal free path (assuming no obstacles) should be a line to the provided endpoint
+    end_point_x = message['endPoint']['x']
+    end_point_y = message['endPoint']['y']
     free_path_line = np.polyfit([0, end_point_x], [0, end_point_y], deg=1)
     free_path = np.poly1d(free_path_line)(x)
     # Try a few distortions of the main free path, and choose the one that produces the best loss
@@ -59,7 +55,6 @@ while True:
         # Minimize the loss to produce an optimal path
         possible_path = minimize(path_loss, x0=possible_free_path, args=(x, free_path), method='TNC', jac=grad(path_loss)).x
         paths.append(possible_path)
-    print([path_loss(p, x, free_path) for p in paths])
     # Choose the path with the lowest loss
     path = min(paths, key=lambda p: path_loss(p, x, free_path))
     # Fit a spline to the points
@@ -67,11 +62,6 @@ while True:
     # Evaluate the spline on a denser X range
     dense_x = np.arange(0, 40, 0.05)
     spline_y = splev(dense_x, spline)
-    import matplotlib.pyplot as plt
-    plt.scatter(obstacles_x, obstacles_y)
-    plt.plot(x, path, x, free_path)
-    plt.show()
-    break
-    # # Send the resulting list of points, formatted in a JSON wrapper
-    # wrapper = {'pathPoints': [{'x': point[0], 'y': point[1]} for point in zip(dense_x, spline_y)]}
-    # socket.send_json(wrapper)
+    # Send the resulting list of points, formatted in a JSON wrapper
+    wrapper = {'pathPoints': [{'x': point[0], 'y': point[1]} for point in zip(dense_x, spline_y)]}
+    socket.send_json(wrapper)
