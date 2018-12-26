@@ -36,7 +36,6 @@ socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5556')
 # Infinite loop during which we receive packets from the Unity simulation
 while True:
-    print('E')
     # Get a message from the simulation
     message = socket.recv_json()
     # Take the obstacles from the message
@@ -60,7 +59,6 @@ while True:
         paths.append(possible_path)
     # Choose the path with the lowest loss
     path = min(paths, key=lambda p: path_loss(p, x, free_path))
-    print(path)
     # Fit a spline to the points
     spline = splrep(x, path)
     # Evaluate the spline on a denser X range
