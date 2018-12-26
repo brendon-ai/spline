@@ -14,10 +14,12 @@ def path_loss(path, x, free):
     path_mean_squared_error = np.mean(np.square(free - path))
     # Create a list containing things to add up to produce the final loss
     loss_values = [path_mean_squared_error]
+    # On the first point, IT MUST BE ZERO (that's where the bike is)
+    loss_values.append(100_000 * np.square(path[0]))
     # Iterate over the path, calculating differences from one point to the next so the derivative is incorporated into the loss
     for point_index in range(len(path) - 1):
         # Add the squared derivative to the loss list
-        loss_values.append(np.square((path[point_index] - path[point_index + 1]) / (x[point_index] - x[point_index + 1])) * 50 / (len(path) - 1))
+        loss_values.append(np.square((path[point_index] - path[point_index + 1]) / (x[point_index] - x[point_index + 1])) * 25 / (len(path) - 1))
     # Iterate over the obstacles, adding to the loss
     for obstacle_x, obstacle_y in obstacles:
         # Get the Pythagorean distance from each point on the path to this obstacle
@@ -34,6 +36,7 @@ socket = context.socket(zmq.REP)
 socket.bind('tcp://*:5556')
 # Infinite loop during which we receive packets from the Unity simulation
 while True:
+    print('E')
     # Get a message from the simulation
     message = socket.recv_json()
     # Take the obstacles from the message
@@ -57,6 +60,7 @@ while True:
         paths.append(possible_path)
     # Choose the path with the lowest loss
     path = min(paths, key=lambda p: path_loss(p, x, free_path))
+    print(path)
     # Fit a spline to the points
     spline = splrep(x, path)
     # Evaluate the spline on a denser X range
