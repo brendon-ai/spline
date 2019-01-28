@@ -42,32 +42,35 @@ while True:
     message = socket.recv_json()
     # Take the obstacles from the message
     obstacles = [(vector['x'], vector['y']) for vector in message['obstacles']]
-    # Get the X and Y positions of the obstacles individually
-    obstacles_x, obstacles_y = [np.array(value_list) for value_list in zip(*obstacles)]
-    # Create a range of fairly widely spaced X axis values to optimize
-    x = np.arange(0, 40, 2)
-    # Get the four points marking out the road edges
-    right0, left0, right1, left1 = [np.array([message[point_name]['x'], message[point_name]['y']]) for point_name in ['right0', 'left0', 'right1', 'left1']]
-    # The optimal free path (assuming no obstacles) should be the average of the two road edges
-    average0 = (right0 + left0) / 2
-    average1 = (right1 + left1) / 2
-    free_path_line = np.polyfit([average0[0], average1[0]], [average0[1], average1[1]], deg=1)
-    free_path = np.poly1d(free_path_line)(x)
-    # Try a few distortions of the main free path, and choose the one that produces the best loss
-    paths = []
-    for possible_free_path_line in [free_path_line, [free_path_line[0] + 0.05, free_path_line[1]], [free_path_line[0] - 0.05, free_path_line[1]]]:
-        # Convert the line to an actual path
-        possible_free_path = np.poly1d(possible_free_path_line)(x)
-        # Minimize the loss to produce an optimal path
-        possible_path = minimize(path_loss, x0=possible_free_path, args=(x, free_path, (right0, left0, right1, left1)), method='TNC', jac=grad(path_loss)).x
-        paths.append(possible_path)
-    # Choose the path with the lowest loss
-    path = min(paths, key=lambda p: path_loss(p, x, free_path, (right0, left0, right1, left1)))
-    # Fit a spline to the points
-    spline = splrep(x, path)
-    # Evaluate the spline on a denser X range
-    dense_x = np.arange(0, 40, 0.05)
-    spline_y = splev(dense_x, spline)
-    # Send the resulting list of points, formatted in a JSON wrapper
-    wrapper = {'pathPoints': [{'x': point[0], 'y': point[1]} for point in zip(dense_x, spline_y)]}
+    # Example output
+    wrapper = {'frontAngle': 0.1, 'backAngle': 0.1, 'frontSpeed': 300, 'backSpeed': 300}
     socket.send_json(wrapper)
+    # # Get the X and Y positions of the obstacles individually
+    # obstacles_x, obstacles_y = [np.array(value_list) for value_list in zip(*obstacles)]
+    # # Create a range of fairly widely spaced X axis values to optimize
+    # x = np.arange(0, 40, 2)
+    # # Get the four points marking out the road edges
+    # right0, left0, right1, left1 = [np.array([message[point_name]['x'], message[point_name]['y']]) for point_name in ['right0', 'left0', 'right1', 'left1']]
+    # # The optimal free path (assuming no obstacles) should be the average of the two road edges
+    # average0 = (right0 + left0) / 2
+    # average1 = (right1 + left1) / 2
+    # free_path_line = np.polyfit([average0[0], average1[0]], [average0[1], average1[1]], deg=1)
+    # free_path = np.poly1d(free_path_line)(x)
+    # # Try a few distortions of the main free path, and choose the one that produces the best loss
+    # paths = []
+    # for possible_free_path_line in [free_path_line, [free_path_line[0] + 0.05, free_path_line[1]], [free_path_line[0] - 0.05, free_path_line[1]]]:
+    #     # Convert the line to an actual path
+    #     possible_free_path = np.poly1d(possible_free_path_line)(x)
+    #     # Minimize the loss to produce an optimal path
+    #     possible_path = minimize(path_loss, x0=possible_free_path, args=(x, free_path, (right0, left0, right1, left1)), method='TNC', jac=grad(path_loss)).x
+    #     paths.append(possible_path)
+    # # Choose the path with the lowest loss
+    # path = min(paths, key=lambda p: path_loss(p, x, free_path, (right0, left0, right1, left1)))
+    # # Fit a spline to the points
+    # spline = splrep(x, path)
+    # # Evaluate the spline on a denser X range
+    # dense_x = np.arange(0, 40, 0.05)
+    # spline_y = splev(dense_x, spline)
+    # # Send the resulting list of points, formatted in a JSON wrapper
+    # wrapper = {'pathPoints': [{'x': point[0], 'y': point[1]} for point in zip(dense_x, spline_y)]}
+    # socket.send_json(wrapper)
