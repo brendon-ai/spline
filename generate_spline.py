@@ -42,6 +42,8 @@ while True:
     message = socket.recv_json()
     # Take the obstacles from the message
     obstacles = [(vector['x'], vector['y']) for vector in message['obstacles']]
+    if message['yCommand'] != 0:
+        print(message['yCommand'])
     # Example output
     wrapper = {'frontAngle': 0.1, 'backAngle': 0.1, 'frontSpeed': 300, 'backSpeed': 300}
     socket.send_json(wrapper)
