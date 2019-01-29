@@ -32,6 +32,18 @@ def path_loss(path, x, free, points):
     return np.sum(loss_values)
 
 
+def calculate_wheel_acceleration_vectors(x_accel, y_accel, heading_accel, heading, wheelbase):
+    """Given acceleration values for X, Y, and heading, as well as the heading and wheelbase, calculate the corresponding acceleration values along the X and Y axes for each of the two omnidirectional wheels"""
+    relative_x_accel = wheelbase * heading_accel * np.cos(heading)
+    x_accel_front = x_accel + (0.5 * relative_x_accel)
+    x_accel_back = x_accel - (0.5 * relative_x_accel)
+    relative_y_accel = -1 * wheelbase * heading_accel * np.cos(heading)
+    y_accel_front = y_accel + (0.5 * relative_y_accel)
+    y_accel_back = y_accel - (0.5 * relative_y_accel)
+    return x_accel_front, x_accel_back, y_accel_front, y_accel_back
+
+
+
 # Connect to the simulation using ZeroMQ
 context = zmq.Context()
 socket = context.socket(zmq.REP)
