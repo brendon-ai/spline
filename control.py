@@ -34,11 +34,12 @@ while True:
     # Take the obstacles from the message
     obstacles = [(vector['x'], vector['y']) for vector in message['obstacles']]
     # Calculate the wheel velocities needed to satisfy the direction commands
-    x_speed_front, x_speed_back, y_speed_front, y_speed_back = calculate_wheel_velocity_vectors(message['xCommand'], message['yCommand'], message['headingCommand'], message['heading'], 1)
+    x_speed_front, x_speed_back, y_speed_front, y_speed_back = calculate_wheel_velocity_vectors(
+        message['xCommand'] * 100, message['yCommand'] * 500, message['headingCommand'], 0, 1)
     # Calculate the wheel directions and speeds needed to create these velocities
     angle_front, total_speed_front = cartesian_to_polar_velocity(x_speed_front, y_speed_front)
     angle_back, total_speed_back = cartesian_to_polar_velocity(x_speed_back, y_speed_back)
-    print(total_speed_front)
+    print(angle_front, total_speed_front, angle_back, total_speed_back)
     # Send the chosen angles and speeds to the simulation
     wrapper = {'frontAngle': angle_front, 'backAngle': angle_back, 'frontSpeed': total_speed_front, 'backSpeed': total_speed_back}
     socket.send_json(wrapper)
