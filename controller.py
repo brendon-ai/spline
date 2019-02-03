@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Control the simulated vehicle's stability and movement"""
 
+import time
+
 import control
 import numpy as np
-import time
 import zmq
 
 # Fundamental constants of the vehicle and the environment
@@ -21,7 +22,7 @@ A = np.array([[0, 1, 0], [GRAVITY / CENTER_OF_MASS_HEIGHT, 0, 0], [0, 0, 0]])
 # Input matrix (defines modification of states based on inputs)
 B = np.array([[0], [-1 / CENTER_OF_MASS_HEIGHT], [1 / MASS]])
 # Loss matrix for states
-Q = 1 * np.diag([1 / (0.3 ** 2), 1 / (0.3 ** 2), 1 / (10 ** 2)])
+Q = 10 * np.diag([1 / (0.3 ** 2), 1 / (2 ** 2), 1 / (5 ** 2)])
 # Loss matrix for inputs
 R = np.array([[1 / (10 ** 2)]])
 # Calculate LQR optimal control policy
@@ -68,7 +69,7 @@ while True:
     # Get the state vector to run the balancing state space controller
     state_vector = np.array([message['tilt'], message['tiltDerivative'], message['yDerivative']])
     # Get the reference vector, which should encourage 0 tilt with 0 change, and the desired orthogonal speed
-    reference_vector = np.array([0, 0, message['xCommand']])
+    reference_vector = np.array([0, 0, message['xCommand'] * 5])
     # Run the state space controller to get the desired orthogonal acceleration
     orthogonal_acceleration = np.matmul(K, reference_vector - state_vector).tolist()[0]
     # Get the desired speed by adding the acceleration multiplied by delta time to the current speed
