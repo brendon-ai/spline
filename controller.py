@@ -27,6 +27,7 @@ Q = 10 * np.diag([1 / (0.3 ** 2), 1 / (2 ** 2), 1 / (5 ** 2)])
 R = np.array([[1 / (10 ** 2)]])
 # Calculate LQR optimal control policy
 K, _, _ = control.lqr(A, B, Q, R)
+print(K)
 
 
 def calculate_wheel_velocity_vectors(x_speed, y_speed, heading_speed, heading):
@@ -55,6 +56,7 @@ socket.bind('tcp://*:5556')
 last_time = time.time()
 # Store the idealized orthogonal speed over time
 idealized_orthogonal_speed = 0
+last = 0
 # Infinite loop during which we receive packets from the Unity simulation
 while True:
     # Get a message from the simulation
@@ -80,6 +82,9 @@ while True:
     # Calculate the wheel directions and speeds needed to create these velocities
     angle_front, total_speed_front = cartesian_to_polar_velocity(x_speed_front, y_speed_front)
     angle_back, total_speed_back = cartesian_to_polar_velocity(x_speed_back, y_speed_back)
+    if angle_front != last:
+        last = angle_front
+        print(angle_front, total_speed_front, angle_back, total_speed_back)
     # Send the chosen angles and speeds to the simulation
     wrapper = {'frontAngle': angle_front, 'backAngle': angle_back, 'frontSpeed': total_speed_front, 'backSpeed': total_speed_back}
     socket.send_json(wrapper)
