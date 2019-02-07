@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<robot name="bike">
+
+  <material name="blue">
+    <color rgba="0 0 0.8 1"/>
+  </material>
+
+  <material name="white">
+    <color rgba="1 1 1 1"/>
+  </material>
+
+  <link name="board">
+    <visual>
+      <geometry>
+        <box size="1.5 0.5 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <link name="front_swerve">
+    <visual>
+      <geometry>
+        <cylinder length="0.2" radius="0.05"/>
+      </geometry>
+      <origin xyz="0.7 0 -0.15"/>
+      <material name="white"/>
+    </visual>
+  </link>
+
+  <joint name="board_to_front_swerve" type="fixed">
+    <parent link="board"/>
+    <child link="front_swerve"/>
+  </joint>
+
+  <link name="front_wheel">
+    <visual>
+      <geometry>
+        <cylinder length="0.05" radius="0.15"/>
+      </geometry>
+      <origin xyz="0.7 0 -0.25" rpy="1.57075 0 0"/>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="front_wheel_to_front_swerve" type="fixed">
+    <parent link="front_swerve"/>
+    <child link="front_wheel"/>
+  </joint>
+
+  <link name="back_swerve">
+    <visual>
+      <geometry>
+        <cylinder length="0.2" radius="0.05"/>
+      </geometry>
+      <origin xyz="-0.7 0 -0.15"/>
+      <material name="white"/>
+    </visual>
+  </link>
+
+  <joint name="board_to_back_swerve" type="fixed">
+    <parent link="board"/>
+    <child link="back_swerve"/>
+  </joint>
+
+  <link name="back_wheel">
+    <visual>
+      <geometry>
+        <cylinder length="0.05" radius="0.15"/>
+      </geometry>
+      <origin xyz="-0.7 0 -0.25" rpy="1.57075 0 0"/>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="back_wheel_to_back_swerve" type="fixed">
+    <parent link="back_swerve"/>
+    <child link="back_wheel"/>
+  </joint>
+
+  <link name="steering_column">
+    <visual>
+      <geometry>
+        <cylinder length="1" radius="0.05"/>
+      </geometry>
+      <origin xyz="0.7 0 0.55"/>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="board_to_steering_column" type="fixed">
+    <parent link="board"/>
+    <child link="steering_column"/>
+  </joint>
+
+  <link name="steering_handle">
+    <visual>
+      <geometry>
+        <cylinder length="0.5" radius="0.05"/>
+      </geometry>
+      <origin xyz="0.7 0 1.075" rpy="1.57075 0 0"/>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="steering_column_to_steering_handle" type="fixed">
+    <parent link="steering_column"/>
+    <child link="steering_handle"/>
+  </joint>
+
+</robot>
