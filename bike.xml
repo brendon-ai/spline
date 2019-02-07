@@ -16,6 +16,15 @@
       </geometry>
       <material name="blue"/>
     </visual>
+    <collision>
+      <geometry>
+        <box size="1.5 0.5 0.1"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10"/>
+      <inertia ixx="0.21667" iyy="1.88333" izz="2.08333"/>
+    </inertial>
   </link>
 
   <link name="front_swerve">
@@ -23,14 +32,24 @@
       <geometry>
         <cylinder length="0.2" radius="0.05"/>
       </geometry>
-      <origin xyz="0.7 0 -0.15"/>
       <material name="white"/>
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.2" radius="0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.00396" iyy="0.00396" izz="0.00125"/>
+    </inertial>
   </link>
 
-  <joint name="board_to_front_swerve" type="fixed">
+  <joint name="board_to_front_swerve" type="continuous">
     <parent link="board"/>
     <child link="front_swerve"/>
+    <axis xyz="0 0 1"/>
+    <origin xyz="0.7 0 -0.15"/>
   </joint>
 
   <link name="front_wheel">
@@ -38,14 +57,24 @@
       <geometry>
         <cylinder length="0.05" radius="0.15"/>
       </geometry>
-      <origin xyz="0.7 0 -0.25" rpy="1.57075 0 0"/>
       <material name="blue"/>
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.05" radius="0.15"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.00583" iyy="0.00583" izz="0.01125"/>
+    </inertial>
   </link>
 
-  <joint name="front_wheel_to_front_swerve" type="fixed">
+  <joint name="front_swerve_to_front_wheel" type="continuous">
     <parent link="front_swerve"/>
     <child link="front_wheel"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0 -0.175" rpy="1.57075 0 0"/>
   </joint>
 
   <link name="back_swerve">
@@ -53,14 +82,24 @@
       <geometry>
         <cylinder length="0.2" radius="0.05"/>
       </geometry>
-      <origin xyz="-0.7 0 -0.15"/>
       <material name="white"/>
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.2" radius="0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.00396" iyy="0.00396" izz="0.00125"/>
+    </inertial>
   </link>
 
-  <joint name="board_to_back_swerve" type="fixed">
+  <joint name="board_to_back_swerve" type="continuous">
     <parent link="board"/>
     <child link="back_swerve"/>
+    <axis xyz="0 0 1"/>
+    <origin xyz="-0.7 0 -0.15"/>
   </joint>
 
   <link name="back_wheel">
@@ -68,14 +107,24 @@
       <geometry>
         <cylinder length="0.05" radius="0.15"/>
       </geometry>
-      <origin xyz="-0.7 0 -0.25" rpy="1.57075 0 0"/>
       <material name="blue"/>
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.05" radius="0.15"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.00583" iyy="0.00583" izz="0.01125"/>
+    </inertial>
   </link>
 
-  <joint name="back_wheel_to_back_swerve" type="fixed">
+  <joint name="back_swerve_to_back_wheel" type="continuous">
     <parent link="back_swerve"/>
     <child link="back_wheel"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0 -0.175" rpy="1.57075 0 0"/>
   </joint>
 
   <link name="steering_column">
@@ -83,14 +132,23 @@
       <geometry>
         <cylinder length="1" radius="0.05"/>
       </geometry>
-      <origin xyz="0.7 0 0.55"/>
       <material name="blue"/>
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="1" radius="0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.08396" iyy="0.08396" izz="0.00125"/>
+    </inertial>
   </link>
 
   <joint name="board_to_steering_column" type="fixed">
     <parent link="board"/>
     <child link="steering_column"/>
+    <origin xyz="0.7 0 0.55"/>
   </joint>
 
   <link name="steering_handle">
@@ -98,14 +156,23 @@
       <geometry>
         <cylinder length="0.5" radius="0.05"/>
       </geometry>
-      <origin xyz="0.7 0 1.075" rpy="1.57075 0 0"/>
       <material name="blue"/>
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.5" radius="0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.02145" iyy="0.02145" izz="0.00125"/>
+    </inertial>
   </link>
 
   <joint name="steering_column_to_steering_handle" type="fixed">
     <parent link="steering_column"/>
     <child link="steering_handle"/>
+    <origin xyz="0 0 0.525" rpy="1.57075 0 0"/>
   </joint>
 
 </robot>
