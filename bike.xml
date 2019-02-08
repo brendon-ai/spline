@@ -73,7 +73,7 @@
   <joint name="front_swerve_to_front_wheel" type="continuous">
     <parent link="front_swerve"/>
     <child link="front_wheel"/>
-    <axis xyz="0 1 0"/>
+    <axis xyz="0 0 1"/>
     <origin xyz="0 0 -0.175" rpy="1.57075 0 0"/>
   </joint>
 
@@ -123,7 +123,7 @@
   <joint name="back_swerve_to_back_wheel" type="continuous">
     <parent link="back_swerve"/>
     <child link="back_wheel"/>
-    <axis xyz="0 1 0"/>
+    <axis xyz="0 0 1"/>
     <origin xyz="0 0 -0.175" rpy="1.57075 0 0"/>
   </joint>
 
