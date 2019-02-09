@@ -21,7 +21,7 @@ p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(0, 0, -9.81)
 plane_id = p.loadURDF('plane.urdf')
 # Load the bike and drop it into the scene
-start_position = [0, 0, 1]
+start_position = [0, 0, 0.475]
 start_orientation = p.getQuaternionFromEuler([0, 0, 0])
 bike_id = p.loadURDF("bike.xml", start_position, start_orientation)
 # Remember the last tilt so we can calculate the derivative
