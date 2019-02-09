@@ -25,11 +25,12 @@ A = np.array([[0, 1, 0], [GRAVITY / CENTER_OF_MASS_HEIGHT, 0, 0], [0, 0, 0]])
 # Input matrix (defines modification of states based on inputs)
 B = np.array([[0], [-1 / CENTER_OF_MASS_HEIGHT], [1 / MASS]])
 # Loss matrix for states
-Q = 1 * np.diag([1 / (0.5 ** 2), 1 / (2 ** 2), 1 / (10 ** 2)])
+Q = 1 * np.diag([1 / (0.4 ** 2), 1 / (0.1 ** 2), 1 / (1 ** 2)])
 # Loss matrix for inputs
-R = np.array([[1 / (40 ** 2)]])
+R = np.array([[1 / (4 ** 2)]])
 # Calculate LQR optimal control policy
 K, _, _ = control.lqr(A, B, Q, R)
+print(K.tolist())
 
 
 def calculate_wheel_velocity_vectors(x_speed, y_speed, heading_speed, heading):
@@ -61,6 +62,9 @@ def cartesian_to_polar_velocity(x_speed, y_speed, current_angle):
     else:
         corrected_error = error - np.pi
         corrected_speed = total_speed * -1
+    # If the angle is a long way away from the target, wait to apply force until it is reasonably stable
+    if corrected_error > 0.1:
+        corrected_speed = 0
     # Add the corrected error to the current angle to get the desired target angle
     corrected_angle = current_angle + corrected_error
     # Return the modified angle and speed
@@ -76,13 +80,14 @@ def control_vehicle(x_pos, y_pos, x_speed, y_speed, tilt, tilt_speed, current_an
     # Store the current time for next run
     last_time = current_time
     # Get the state vector to run the balancing state space controller
-    state_vector = np.array([tilt, tilt_speed, y_speed])
+    state_vector = np.array([tilt, tilt_speed, -y_speed])
     # Get the reference vector, which should encourage 0 tilt with 0 change, and the desired orthogonal speed
-    reference_vector = np.array([0, 0, 5])
+    reference_vector = np.array([0, 0, 4])
     # Run the state space controller to get the desired orthogonal acceleration
     orthogonal_acceleration = np.matmul(K, reference_vector - state_vector).tolist()[0]
     # Get the desired speed by adding the acceleration multiplied by delta time to the current speed
     global idealized_orthogonal_speed
+    print('Speed:', y_speed, 'Tilt:', tilt, 'TiltSpeed:', tilt_speed, 'Accel:', orthogonal_acceleration)
     idealized_orthogonal_speed += (orthogonal_acceleration * delta_time)
     # Calculate the wheel velocities needed to satisfy the direction commands
     x_speed_front, x_speed_back, y_speed_front, y_speed_back = calculate_wheel_velocity_vectors(
