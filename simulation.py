@@ -47,7 +47,7 @@ for i in range(100_000):
     current_angle_front, _, _, _ = p.getJointState(bike_id, FRONT_SWERVE)
     current_angle_back, _, _, _ = p.getJointState(bike_id, BACK_SWERVE)
     # Get the desired control values according to the current states
-    angle_front, angle_back, total_speed_front, total_speed_back = control_vehicle(x_pos, y_pos, heading, x_speed, y_speed, tilt, tilt_speed, current_angle_front, current_angle_back, 1, 1, 0)
+    angle_front, angle_back, total_speed_front, total_speed_back = control_vehicle(heading, x_speed, y_speed, tilt, tilt_speed, current_angle_front, current_angle_back, 0, 1, 0)
     # Set the desired angles of the swerve motors
     p.setJointMotorControlArray(bodyUniqueId=bike_id, jointIndices=[FRONT_SWERVE, BACK_SWERVE], controlMode=p.POSITION_CONTROL, targetPositions=[angle_front, angle_back], forces=[10] * 2)
     # Set the desired speeds of the drive motors
