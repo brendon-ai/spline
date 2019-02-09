@@ -3,6 +3,7 @@
 
 import time
 
+import numpy as np
 import pybullet_data
 import pybullet as p
 
@@ -33,11 +34,11 @@ for i in range(100_000):
     # Specifically, we want the X and Y positions
     x_pos, y_pos, _ = bike_position
     # Convert the orientation to Euler angles, and get the tilt angle
-    tilt, _, _ = p.getEulerFromQuaternion(bike_orientation_quaternion)
+    tilt, _, heading = p.getEulerFromQuaternion(bike_orientation_quaternion)
     # Get the current velocity of the bike (positional only)
     bike_position_speed, _ = p.getBaseVelocity(bike_id)
-    # We want the X and Y speeds
-    x_speed, y_speed, _ = bike_position_speed
+    # We want the X and Y speeds (but for some reason they are inverted)
+    x_speed, y_speed, _ = np.array(bike_position_speed)
     # Calculate the tilt speed numerically
     tilt_speed = (tilt - last_tilt) / DELTA_TIME
     # Update the previous tilt value
@@ -46,7 +47,7 @@ for i in range(100_000):
     current_angle_front, _, _, _ = p.getJointState(bike_id, FRONT_SWERVE)
     current_angle_back, _, _, _ = p.getJointState(bike_id, BACK_SWERVE)
     # Get the desired control values according to the current states
-    angle_front, angle_back, total_speed_front, total_speed_back = control_vehicle(x_pos, y_pos, x_speed, y_speed, tilt, tilt_speed, current_angle_front, current_angle_back)
+    angle_front, angle_back, total_speed_front, total_speed_back = control_vehicle(x_pos, y_pos, heading, x_speed, y_speed, tilt, tilt_speed, current_angle_front, current_angle_back, 1, 1, 0)
     # Set the desired angles of the swerve motors
     p.setJointMotorControlArray(bodyUniqueId=bike_id, jointIndices=[FRONT_SWERVE, BACK_SWERVE], controlMode=p.POSITION_CONTROL, targetPositions=[angle_front, angle_back], forces=[10] * 2)
     # Set the desired speeds of the drive motors

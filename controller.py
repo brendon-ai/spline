@@ -25,12 +25,13 @@ A = np.array([[0, 1, 0], [GRAVITY / CENTER_OF_MASS_HEIGHT, 0, 0], [0, 0, 0]])
 # Input matrix (defines modification of states based on inputs)
 B = np.array([[0], [-1 / CENTER_OF_MASS_HEIGHT], [1 / MASS]])
 # Loss matrix for states
-Q = 1 * np.diag([1 / (0.4 ** 2), 1 / (0.1 ** 2), 1 / (1 ** 2)])
+Q = 1 * np.diag([1 / (0.1 ** 2), 1 / (0.05 ** 2), 1 / (0.2 ** 2)])
 # Loss matrix for inputs
-R = np.array([[1 / (4 ** 2)]])
+R = np.array([[1 / (1 ** 2)]])
 # Calculate LQR optimal control policy
 K, _, _ = control.lqr(A, B, Q, R)
 print(K.tolist())
+# print(1/0)
 
 
 def calculate_wheel_velocity_vectors(x_speed, y_speed, heading_speed, heading):
@@ -71,7 +72,7 @@ def cartesian_to_polar_velocity(x_speed, y_speed, current_angle):
     return corrected_angle, corrected_speed
 
 
-def control_vehicle(x_pos, y_pos, x_speed, y_speed, tilt, tilt_speed, current_angle_front, current_angle_back):
+def control_vehicle(x_pos, y_pos, x_speed, y_speed, heading, tilt, tilt_speed, current_angle_front, current_angle_back, x_command, y_command, heading_command):
     """Given commands and state values, calculate the controls to use for the vehicle"""
     # Get the delta time since the last run of this loop
     current_time = time.time()
@@ -79,19 +80,23 @@ def control_vehicle(x_pos, y_pos, x_speed, y_speed, tilt, tilt_speed, current_an
     delta_time = current_time - last_time
     # Store the current time for next run
     last_time = current_time
+    # Rotate the command direction vector so it is aligned with the vehicle's heading
+    forward_command, orthogonal_command = rotate_vector(x_command, y_command, heading)
+    # Do likewise for the current X and Y speeds
+    forward_speed, orthogonal_speed = rotate_vector(x_speed, y_speed, heading)
     # Get the state vector to run the balancing state space controller
-    state_vector = np.array([tilt, tilt_speed, -y_speed])
+    state_vector = np.array([tilt, tilt_speed, orthogonal_speed])
     # Get the reference vector, which should encourage 0 tilt with 0 change, and the desired orthogonal speed
-    reference_vector = np.array([0, 0, 4])
+    reference_vector = np.array([0, 0, orthogonal_command])
     # Run the state space controller to get the desired orthogonal acceleration
     orthogonal_acceleration = np.matmul(K, reference_vector - state_vector).tolist()[0]
     # Get the desired speed by adding the acceleration multiplied by delta time to the current speed
     global idealized_orthogonal_speed
-    print('Speed:', y_speed, 'Tilt:', tilt, 'TiltSpeed:', tilt_speed, 'Accel:', orthogonal_acceleration)
     idealized_orthogonal_speed += (orthogonal_acceleration * delta_time)
     # Calculate the wheel velocities needed to satisfy the direction commands
     x_speed_front, x_speed_back, y_speed_front, y_speed_back = calculate_wheel_velocity_vectors(
-        idealized_orthogonal_speed, 0, 0, 0)
+        idealized_orthogonal_speed, forward_command, heading_command, heading)
+    print(idealized_orthogonal_speed, forward_command, orthogonal_command, heading)
     # Calculate the wheel directions and speeds needed to create these velocities
     angle_front, total_speed_front = cartesian_to_polar_velocity(x_speed_front, y_speed_front, current_angle_front)
     angle_back, total_speed_back = cartesian_to_polar_velocity(x_speed_back, y_speed_back, current_angle_back)
@@ -102,3 +107,8 @@ def control_vehicle(x_pos, y_pos, x_speed, y_speed, tilt, tilt_speed, current_an
 def bound_angle(angle):
     """Bound an angle in the range (-pi, pi)"""
     return ((angle + np.pi) % (2 * np.pi)) - np.pi
+
+
+def rotate_vector(x, y, angle):
+    """Rotate a vector by a specified angle"""
+    return (x * np.cos(angle)) + (y * np.sin(angle)), (x * np.sin(angle) * -1) + (y * np.cos(angle))
