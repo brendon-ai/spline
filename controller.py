@@ -25,9 +25,9 @@ A = np.array([[0, 1, 0], [GRAVITY / CENTER_OF_MASS_HEIGHT, 0, 0], [0, 0, 0]])
 # Input matrix (defines modification of states based on inputs)
 B = np.array([[0], [-1 / CENTER_OF_MASS_HEIGHT], [1 / MASS]])
 # Loss matrix for states
-Q = 1 * np.diag([1 / (0.2 ** 2), 1 / (0.2 ** 2), 1 / (0.5 ** 2)])
+Q = 1 * np.diag([1 / (0.1 ** 2), 1 / (0.5 ** 2), 1 / (1 ** 2)])
 # Loss matrix for inputs
-R = np.array([[1 / (10 ** 2)]])
+R = np.array([[1 / (5 ** 2)]])
 # Calculate LQR optimal control policy
 K, _, _ = control.lqr(A, B, Q, R)
 print(K.tolist())
@@ -41,7 +41,8 @@ def calculate_wheel_velocity_vectors(forward_speed, orthogonal_speed, heading_sp
     orthogonal_speed_front = orthogonal_speed + (0.5 * relative_orthogonal_speed)
     orthogonal_speed_back = orthogonal_speed - (0.5 * relative_orthogonal_speed)
     # There should never be a difference in the forward speeds of the two wheels
-    return forward_speed, forward_speed, orthogonal_speed_front, orthogonal_speed_back
+    # The wheel spin direction is inverted relative to the axes of the world
+    return -forward_speed, -forward_speed, orthogonal_speed_front, orthogonal_speed_back
 
 
 def cartesian_to_polar_velocity(forward_speed, orthogonal_speed, current_angle):
@@ -82,6 +83,8 @@ def control_vehicle(x_speed, y_speed, heading, tilt, tilt_speed, current_angle_f
     last_time = current_time
     # Rotate the command direction vector so it is aligned with the vehicle's heading
     forward_command, orthogonal_command = rotate_vector(x_command, y_command, heading)
+    print(x_command)
+    print(forward_command)
     # Do likewise for the current X and Y speeds
     forward_speed, orthogonal_speed = rotate_vector(x_speed, y_speed, heading)
     # Get the state vector to run the balancing state space controller
@@ -95,7 +98,7 @@ def control_vehicle(x_speed, y_speed, heading, tilt, tilt_speed, current_angle_f
     idealized_orthogonal_speed += (orthogonal_acceleration * delta_time)
     # Calculate the wheel velocities needed to satisfy the direction commands
     forward_speed_front, forward_speed_back, orthogonal_speed_front, orthogonal_speed_back = calculate_wheel_velocity_vectors(forward_command, idealized_orthogonal_speed, heading_command)
-    print(tilt, tilt_speed, orthogonal_speed, forward_speed, x_speed, y_speed)
+    print(x_speed, y_speed, idealized_orthogonal_speed, tilt)
     # Calculate the wheel directions and speeds needed to create these velocities
     angle_front, total_speed_front = cartesian_to_polar_velocity(forward_speed_front, orthogonal_speed_front, current_angle_front)
     angle_back, total_speed_back = cartesian_to_polar_velocity(forward_speed_back, orthogonal_speed_back, current_angle_back)
