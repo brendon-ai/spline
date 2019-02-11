@@ -25,7 +25,7 @@ A = np.array([[0, 1, 0], [GRAVITY / CENTER_OF_MASS_HEIGHT, 0, 0], [0, 0, 0]])
 # Input matrix (defines modification of states based on inputs)
 B = np.array([[0], [-1 / CENTER_OF_MASS_HEIGHT], [1 / MASS]])
 # Loss matrix for states
-Q = 1 * np.diag([1 / (0.2 ** 2), 1 / (0.2 ** 2), 1 / (2 ** 2)])
+Q = 1 * np.diag([1 / (0.2 ** 2), 1 / (0.2 ** 2), 1 / (0.5 ** 2)])
 # Loss matrix for inputs
 R = np.array([[1 / (10 ** 2)]])
 # Calculate LQR optimal control policy
@@ -95,7 +95,7 @@ def control_vehicle(x_speed, y_speed, heading, tilt, tilt_speed, current_angle_f
     idealized_orthogonal_speed += (orthogonal_acceleration * delta_time)
     # Calculate the wheel velocities needed to satisfy the direction commands
     forward_speed_front, forward_speed_back, orthogonal_speed_front, orthogonal_speed_back = calculate_wheel_velocity_vectors(forward_command, idealized_orthogonal_speed, heading_command)
-    print(idealized_orthogonal_speed, forward_command, orthogonal_command, heading)
+    print(tilt, tilt_speed, orthogonal_speed, forward_speed, x_speed, y_speed)
     # Calculate the wheel directions and speeds needed to create these velocities
     angle_front, total_speed_front = cartesian_to_polar_velocity(forward_speed_front, orthogonal_speed_front, current_angle_front)
     angle_back, total_speed_back = cartesian_to_polar_velocity(forward_speed_back, orthogonal_speed_back, current_angle_back)
