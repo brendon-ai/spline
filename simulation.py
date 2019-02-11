@@ -3,7 +3,6 @@
 
 import time
 
-import numpy as np
 import pybullet_data
 import pybullet as p
 

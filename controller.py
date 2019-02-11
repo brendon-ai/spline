@@ -30,8 +30,6 @@ Q = 1 * np.diag([1 / (0.1 ** 2), 1 / (0.5 ** 2), 1 / (1 ** 2)])
 R = np.array([[1 / (5 ** 2)]])
 # Calculate LQR optimal control policy
 K, _, _ = control.lqr(A, B, Q, R)
-print(K.tolist())
-# print(1/0)
 
 
 def calculate_wheel_velocity_vectors(forward_speed, orthogonal_speed, heading_speed):
@@ -83,8 +81,6 @@ def control_vehicle(x_speed, y_speed, heading, tilt, tilt_speed, current_angle_f
     last_time = current_time
     # Rotate the command direction vector so it is aligned with the vehicle's heading
     forward_command, orthogonal_command = rotate_vector(x_command, y_command, heading)
-    print(x_command)
-    print(forward_command)
     # Do likewise for the current X and Y speeds
     forward_speed, orthogonal_speed = rotate_vector(x_speed, y_speed, heading)
     # Get the state vector to run the balancing state space controller
@@ -98,7 +94,6 @@ def control_vehicle(x_speed, y_speed, heading, tilt, tilt_speed, current_angle_f
     idealized_orthogonal_speed += (orthogonal_acceleration * delta_time)
     # Calculate the wheel velocities needed to satisfy the direction commands
     forward_speed_front, forward_speed_back, orthogonal_speed_front, orthogonal_speed_back = calculate_wheel_velocity_vectors(forward_command, idealized_orthogonal_speed, heading_command)
-    print(x_speed, y_speed, idealized_orthogonal_speed, tilt)
     # Calculate the wheel directions and speeds needed to create these velocities
     angle_front, total_speed_front = cartesian_to_polar_velocity(forward_speed_front, orthogonal_speed_front, current_angle_front)
     angle_back, total_speed_back = cartesian_to_polar_velocity(forward_speed_back, orthogonal_speed_back, current_angle_back)
