@@ -92,9 +92,14 @@ def control_vehicle(x_speed, y_speed, heading, tilt, tilt_speed, current_angle_f
     # Get the desired speed by adding the acceleration multiplied by delta time to the current speed
     global idealized_orthogonal_speed
     idealized_orthogonal_speed += (orthogonal_acceleration * delta_time)
+    # Scale the forward speed according to the expected versus actual orthogonal speed, so the wheels do not oscillate a lot
+    if np.abs(orthogonal_command) > 0.3:
+        scaled_forward_speed = forward_command * np.abs(idealized_orthogonal_speed / orthogonal_command)
+    else:
+        scaled_forward_speed = forward_command
     print(orthogonal_command, orthogonal_speed, tilt, tilt_speed)
     # Calculate the wheel velocities needed to satisfy the direction commands
-    forward_speed_front, forward_speed_back, orthogonal_speed_front, orthogonal_speed_back = calculate_wheel_velocity_vectors(forward_command, idealized_orthogonal_speed, heading_command)
+    forward_speed_front, forward_speed_back, orthogonal_speed_front, orthogonal_speed_back = calculate_wheel_velocity_vectors(scaled_forward_speed, idealized_orthogonal_speed, heading_command)
     # Calculate the wheel directions and speeds needed to create these velocities
     angle_front, total_speed_front = cartesian_to_polar_velocity(forward_speed_front, orthogonal_speed_front, current_angle_front)
     angle_back, total_speed_back = cartesian_to_polar_velocity(forward_speed_back, orthogonal_speed_back, current_angle_back)
