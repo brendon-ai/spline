@@ -23,7 +23,7 @@ plane_id = p.loadURDF('plane.urdf')
 # Load the bike and drop it into the scene
 start_position = [0, 0, 0.475]
 start_orientation = p.getQuaternionFromEuler([0, 0, 0])
-bike_id = p.loadURDF("bike.xml", start_position, start_orientation)
+bike_id = p.loadURDF('bike.xml', start_position, start_orientation)
 # Remember the last tilt so we can calculate the derivative
 last_tilt = 0
 # Run the simulation for a defined number of steps
@@ -50,7 +50,7 @@ for i in range(100_000):
     current_angle_front, _, _, _ = p.getJointState(bike_id, FRONT_SWERVE)
     current_angle_back, _, _, _ = p.getJointState(bike_id, BACK_SWERVE)
     # Get the desired control values according to the current states
-    angle_front, angle_back, total_speed_front, total_speed_back = control_vehicle(x_speed, y_speed, heading, tilt, tilt_speed, current_angle_front, current_angle_back, 1, 1, 0.2)
+    angle_front, angle_back, total_speed_front, total_speed_back = control_vehicle(x_speed, y_speed, heading, tilt, tilt_speed, current_angle_front, current_angle_back, -1, 1, 0.3)
     # Set the desired angles of the swerve motors
     p.setJointMotorControlArray(bodyUniqueId=bike_id, jointIndices=[FRONT_SWERVE, BACK_SWERVE], controlMode=p.POSITION_CONTROL, targetPositions=[angle_front, angle_back], forces=[20] * 2)
     # Set the desired speeds of the drive motors

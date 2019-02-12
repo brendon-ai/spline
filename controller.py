@@ -27,7 +27,7 @@ B = np.array([[0], [-1 / CENTER_OF_MASS_HEIGHT], [1]])
 # Loss matrix for states
 Q = 1 * np.diag([1 / (0.3 ** 2), 1 / (0.1 ** 2), 1 / (0.5 ** 2)])
 # Loss matrix for inputs
-R = np.array([[1 / (5 ** 2)]])
+R = np.array([[1 / (2 ** 2)]])
 # Calculate LQR optimal control policy
 K, _, _ = control.lqr(A, B, Q, R)
 
@@ -93,13 +93,20 @@ def control_vehicle(x_speed, y_speed, heading, tilt, tilt_speed, current_angle_f
     global idealized_orthogonal_speed
     idealized_orthogonal_speed += (orthogonal_acceleration * delta_time)
     # Scale the forward speed according to the expected versus actual orthogonal speed, so the wheels do not oscillate a lot
-    if np.abs(orthogonal_command) > 0.3:
-        scaled_forward_speed = forward_command * np.abs(idealized_orthogonal_speed / orthogonal_command)
-    else:
-        scaled_forward_speed = forward_command
-    print(orthogonal_command, orthogonal_speed, tilt, tilt_speed)
+    # Linearly interpolate the forward command between the original and scaled versions if the orthogonal command is within a predefined range
+    bounds = [0.1, 0.5]
+    if bounds[0] < np.abs(orthogonal_command):
+        # Never go faster than the predefined forward speed, only slower
+        scaled_forward_speed = forward_command * np.min([np.abs(idealized_orthogonal_speed / orthogonal_command), 1])
+        # If it's in the range, do the linear interpolationinterpolation
+        if np.abs(orthogonal_command) < bounds[1]:
+            interpolation_distance = ((np.abs(orthogonal_command) - bounds[0]) / (bounds[1] - bounds[0]))
+            forward_command = (scaled_forward_speed * interpolation_distance) + (forward_command * (1 - interpolation_distance))
+        # If the vehicle is going vaguely sideways, just use the scaled speed
+        else:
+            forward_command = scaled_forward_speed
     # Calculate the wheel velocities needed to satisfy the direction commands
-    forward_speed_front, forward_speed_back, orthogonal_speed_front, orthogonal_speed_back = calculate_wheel_velocity_vectors(scaled_forward_speed, idealized_orthogonal_speed, heading_command)
+    forward_speed_front, forward_speed_back, orthogonal_speed_front, orthogonal_speed_back = calculate_wheel_velocity_vectors(forward_command, idealized_orthogonal_speed, heading_command)
     # Calculate the wheel directions and speeds needed to create these velocities
     angle_front, total_speed_front = cartesian_to_polar_velocity(forward_speed_front, orthogonal_speed_front, current_angle_front)
     angle_back, total_speed_back = cartesian_to_polar_velocity(forward_speed_back, orthogonal_speed_back, current_angle_back)
